@@ -10,7 +10,7 @@ const serverHandle = (req, res) => {
     const {url} = req
     req.path = url.split('?')[0]
     req.query = querystring.parse(url.split('?')[1])
-    
+
     const blogData = handleBlogRouter(req, res)
     const userData = handleUserRouter(req, res)
 

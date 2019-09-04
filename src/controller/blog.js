@@ -17,6 +17,16 @@ const getBlogList = (author, keyword) => {
 
 }
 
+const getBlogDetail = id => {
+    return {
+        id,
+        title: '可爱女人',
+        author: '张三',
+        createTime: 1567578198986
+    }
+}
+
 module.exports = {
-    getBlogList
+    getBlogList,
+    getBlogDetail
 }
