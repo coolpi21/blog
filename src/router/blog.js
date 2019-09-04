@@ -1,10 +1,18 @@
+const {getBlogList} = require('../controller/blog')
+const {SuccessModel, ErrorModel} = require('../model/baseModel')
 const handleBlogRouter = (req, res) => {
     const {method} = req
 
     // 这是博客列表接口
     if (method === 'GET' && req.path === '/api/blog/list') {
-        return {
-            msg: '这是博客列表接口'
+        const {author, keyword} = req.query
+        if (author && keyword) {
+            const listData = getBlogList(author, keyword)
+            return new SuccessModel(listData)
+        } else {
+            return {
+                msg: '缺少参数信息'
+            }
         }
     }
 
