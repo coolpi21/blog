@@ -20,7 +20,6 @@ const getPostData = function (req) {
             postData += chunk.toString()
         })
         req.on('end', () => {
-            console.log(postData)
             if (!postData) {
                 resolve({})
                 return
@@ -39,12 +38,16 @@ const serverHandle = (req, res) => {
 
     getPostData(req).then(postData => {
         req.body = postData
-        const blogData = handleBlogRouter(req, res)
+        const blogResult = handleBlogRouter(req, res)
         const userData = handleUserRouter(req, res)
 
         // 命中博客路由
-        if (blogData) {
-            res.end(JSON.stringify(blogData))
+        if (blogResult) {
+            blogResult.then(blogData => {
+                res.end(
+                    JSON.stringify(blogData)
+                )
+            })
             return
         }
 

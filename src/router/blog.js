@@ -13,29 +13,36 @@ const handleBlogRouter = (req, res) => {
     // 这是博客列表接口
     if (method === 'GET' && req.path === '/api/blog/list') {
         const {author, keyword} = req.query
-        if (author && keyword) {
-            const listData = getBlogList(author, keyword)
+
+
+        const listResult = getBlogList(author, keyword)
+        return listResult.then(listData => {
             return new SuccessModel(listData)
-        } else {
-            return {
-                msg: '缺少参数信息'
-            }
-        }
+        })
+        // return new SuccessModel(listData)
+
     }
 
     // 这是博客详情接口
     if (method === 'GET' && req.path === '/api/blog/detail') {
         if (id) {
-            const detailData = getBlogDetail(id)
-            return new SuccessModel(detailData)
+            const detailResult = getBlogDetail(id)
+            return detailResult.then(data => {
+                return new SuccessModel(data[0])
+            })
         }
 
     }
 
     // 这是新建博客接口
     if (method === 'POST' && req.path === '/api/blog/new') {
-        const blogData = newBlog(req.body)
-        return new SuccessModel(blogData)
+        req.body.author = 'zhangsan' // 假数据，待登录端口后开发
+        const blogResult = newBlog(req.body)
+
+        return blogResult.then(data => {
+            // console.log(data)
+            return new SuccessModel(data)
+        })
     }
 
     // 这是博客更新接口
