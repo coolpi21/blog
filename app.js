@@ -39,7 +39,7 @@ const serverHandle = (req, res) => {
     getPostData(req).then(postData => {
         req.body = postData
         const blogResult = handleBlogRouter(req, res)
-        const userData = handleUserRouter(req, res)
+        const userResult = handleUserRouter(req, res)
 
         // 命中博客路由
         if (blogResult) {
@@ -52,8 +52,10 @@ const serverHandle = (req, res) => {
         }
 
         // 命中用户路由
-        if (userData) {
-            res.end(JSON.stringify(userData))
+        if (userResult) {
+            userResult.then(userData => {
+                res.end(JSON.stringify(userData))
+            })
             return
         }
 

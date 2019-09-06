@@ -8,11 +8,13 @@ const handleUserRouter = (req, res) => {
         const {username, password} = req.body
         if (username && password) {
             const result = loginCheck(username, password)
-            if (result) {
-                return new SuccessModel()
-            } else {
-                return new ErrorModel('登录失败')
-            }
+            return result.then(userData => {
+                if (userData.username) {
+                    return new SuccessModel()
+                } else {
+                    return new ErrorModel('登录失败')
+                }
+            })
         }
     }
 }
