@@ -8,5 +8,5 @@ const loginCheck = (username, password) => {
 }
 
 module.exports = {
-    loginCheck
+    login: loginCheck
 }

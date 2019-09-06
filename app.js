@@ -36,6 +36,19 @@ const serverHandle = (req, res) => {
     req.path = url.split('?')[0]
     req.query = querystring.parse(url.split('?')[1])
 
+    // 解析 cookie
+    req.cookie = {} // k1=123;k2=246;k3=458
+    const cookieStr = req.headers.cookie || ''
+    if (req.headers.cookie) {
+        cookieStr.split(';').forEach(item => {
+            const arr = item.split('=')
+            const key = arr[0]
+            const value = arr[1]
+            req.cookie[key] = value
+        })
+    }
+    console.log(req.cookie)
+
     getPostData(req).then(postData => {
         req.body = postData
         const blogResult = handleBlogRouter(req, res)
