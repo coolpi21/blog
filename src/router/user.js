@@ -1,5 +1,11 @@
 const {login} = require('../controller/user')
 const {SuccessModel, ErrorModel} = require('../model/baseModel')
+const getExpiredTime = () => {
+    const t = new Date()
+    t.setTime(t.getTime() + 24 * 60 * 60 * 1000)
+    console.log('t.toUTCString is', t.toUTCString())
+    return t.toUTCString()
+}
 
 const handleUserRouter = (req, res) => {
     const {method} = req
@@ -10,7 +16,7 @@ const handleUserRouter = (req, res) => {
             const result = login(username, password)
             return result.then(userData => {
                 if (userData.username) {
-                    res.setHeader('Set-Cookie', `username=${userData.username};path=/`)
+                    res.setHeader('Set-Cookie', `username=${userData.username};path=/; httpOnly; expires=${getExpiredTime()}`)
                     return new SuccessModel()
                 } else {
                     return new ErrorModel('登录失败')
