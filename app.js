@@ -2,6 +2,14 @@ const querystring = require('querystring')
 
 const handleBlogRouter = require('./src/router/blog')
 const handleUserRouter = require('./src/router/user')
+const getExpiredTime = () => {
+    const t = new Date()
+    t.setTime(t.getTime() + 24 * 60 * 60 * 1000)
+    console.log('t.toUTCString is', t.toUTCString())
+    return t.toUTCString()
+}
+
+const SESSION_DATA = {}
 // 获取 POST 方式的数据
 const getPostData = function (req) {
     return new Promise((resolve, reject) => {
@@ -49,6 +57,22 @@ const serverHandle = (req, res) => {
     }
     console.log(req.cookie)
 
+    // 解析 session
+    let userId = req.cookie.userid
+    let needCookieSetting = false
+    if (userId) {
+        if (!SESSION_DATA[userId]) {
+            SESSION_DATA[userId] = {}
+        }
+    } else {
+        needCookieSetting = true
+        userId = `${Date.now()}_${Math.random()}`
+        SESSION_DATA[userId] = {}
+    }
+    // 两个对象引用同一指针，因为 req.session 改变了值，所以 SESSION_DATA[userId]也改变了值
+    req.session = SESSION_DATA[userId]
+
+
     getPostData(req).then(postData => {
         req.body = postData
         const blogResult = handleBlogRouter(req, res)
@@ -57,6 +81,9 @@ const serverHandle = (req, res) => {
         // 命中博客路由
         if (blogResult) {
             blogResult.then(blogData => {
+                if (needCookieSetting) {
+                    res.setHeader('Set-Cookie', `userid=${userId};path=/;  httpOnly; expires=${getExpiredTime()}`)
+                }
                 res.end(
                     JSON.stringify(blogData)
                 )
@@ -67,6 +94,9 @@ const serverHandle = (req, res) => {
         // 命中用户路由
         if (userResult) {
             userResult.then(userData => {
+                if (needCookieSetting) {
+                    res.setHeader('Set-Cookie', `userid=${userId};path=/;  httpOnly; expires=${getExpiredTime()}`)
+                }
                 res.end(JSON.stringify(userData))
             })
             return
