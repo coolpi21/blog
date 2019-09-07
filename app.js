@@ -1,5 +1,5 @@
 const querystring = require('querystring')
-
+const {get,set} = require('./src/db/redis')
 const handleBlogRouter = require('./src/router/blog')
 const handleUserRouter = require('./src/router/user')
 const getExpiredTime = () => {
@@ -9,7 +9,6 @@ const getExpiredTime = () => {
     return t.toUTCString()
 }
 
-const SESSION_DATA = {}
 // 获取 POST 方式的数据
 const getPostData = function (req) {
     return new Promise((resolve, reject) => {
@@ -58,22 +57,40 @@ const serverHandle = (req, res) => {
     console.log(req.cookie)
 
     // 解析 session
+    // let userId = req.cookie.userid
+    // let needCookieSetting = false
+    // if (userId) {
+    //     if (!SESSION_DATA[userId]) {
+    //         SESSION_DATA[userId] = {}
+    //     }
+    // } else {
+    //     needCookieSetting = true
+    //     userId = `${Date.now()}_${Math.random()}`
+    //     SESSION_DATA[userId] = {}
+    // }
+    // // 两个对象引用同一指针，因为 req.session 改变了值，所以 SESSION_DATA[userId]也改变了值
+    // req.session = SESSION_DATA[userId]
+
+    // redis 设置 session
     let userId = req.cookie.userid
     let needCookieSetting = false
-    if (userId) {
-        if (!SESSION_DATA[userId]) {
-            SESSION_DATA[userId] = {}
-        }
-    } else {
+    if (!userId) {
         needCookieSetting = true
         userId = `${Date.now()}_${Math.random()}`
-        SESSION_DATA[userId] = {}
+        set(userId, {})
     }
-    // 两个对象引用同一指针，因为 req.session 改变了值，所以 SESSION_DATA[userId]也改变了值
-    req.session = SESSION_DATA[userId]
-
-
-    getPostData(req).then(postData => {
+    req.sessionId = userId
+    get(req.sessionId).then(val => {
+        if (val == null) {
+            set(req.sessionId, {})
+            // 设置 session
+            req.session = {}
+        } else {
+            req.session = val
+        }
+        return getPostData(req)
+    })
+    .then(postData => {
         req.body = postData
         const blogResult = handleBlogRouter(req, res)
         const userResult = handleUserRouter(req, res)
