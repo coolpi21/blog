@@ -1,5 +1,6 @@
 const querystring = require('querystring')
 const {get,set} = require('./src/db/redis')
+const {access} = require('./src/utils/log')
 const handleBlogRouter = require('./src/router/blog')
 const handleUserRouter = require('./src/router/user')
 const getExpiredTime = () => {
@@ -37,6 +38,9 @@ const getPostData = function (req) {
 }
 
 const serverHandle = (req, res) => {
+    // 解析日志
+    access(`${req.method} -- ${req.url} -- ${req.headers['user-agent']} -- ${Date.now()}`)
+
     // 设置响应头为 JSON 格式
     res.setHeader('Content-type', 'application/json')
     const {url} = req
